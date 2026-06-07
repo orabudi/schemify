@@ -13,11 +13,15 @@
   --bg-footer: #0a0f14;
   --glass-bg: #0a0f14;
   --glass-border: rgba(0, 229, 255, 0.2);
-  --critical-issue-color: rgb(95, 15, 15);
-  --high-issue-color: #eb0d0d;
+  /* Critical = dark red, High = lighter red. The deep red behind white badge
+     text is kept as --critical-issue-bg. */
+  --critical-issue-color: #b71c1c;
+  --critical-issue-bg: rgb(95, 15, 15);
+  --high-issue-color: #ef4444;
   --medium-issue-color: rgb(223, 92, 16);
   --low-issue-color: #f1ee0c;
   --row-score-card-border-color: #21262d;
+  --warning: #f5a623;
 }
 
 * {
@@ -416,7 +420,10 @@ body {
 }
 
 .card:hover {
-  transform: translateY(-2px);
+  /* No vertical shift — the input card holds the code editor, and lifting it
+     while the user is aiming for the editor/buttons is disorienting. Use a
+     subtle border highlight instead. */
+  border-color: rgba(0, 229, 255, 0.4);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
@@ -587,7 +594,7 @@ textarea:focus {
 }
 
 .badge-issue-critical {
-  background: var(--critical-issue-color);
+  background: var(--critical-issue-bg);
   color: white;
 }
 
@@ -708,7 +715,7 @@ textarea:focus {
 .analysis-instructions {
   display: flex;
   justify-content: center;
-  color: orange;
+  color: var(--warning);
   margin-top: 0.75rem;
   align-self: center;
 }
@@ -754,11 +761,11 @@ textarea:focus {
 }
 
 .score-label {
-  font-size: 0.5rem;
-  font-weight: 300;
+  font-size: 0.7rem;
+  font-weight: 400;
   color: var(--fg-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
 }
 
 .no-issues-detected-text {
@@ -820,20 +827,35 @@ textarea:focus {
   margin-right: 0.25rem;
 }
 
+/* Encode severity on the title itself, not just the thin left border, so
+   issues are scannable at a glance (and not reliant on color alone — the
+   always-visible line badge carries the severity word). */
+.issue-critical h4 {
+  color: var(--critical-issue-color);
+}
+.issue-high h4 {
+  color: var(--high-issue-color);
+}
+.issue-medium h4 {
+  color: var(--medium-issue-color);
+}
+.issue-low h4 {
+  color: var(--low-issue-color);
+}
+
 .issue-item p {
   margin: 0;
   font-size: 0.875rem;
   color: var(--fg-secondary);
 }
 
+/* Details are always visible. Previously hidden behind :hover, which made the
+   core explanation unreachable on touch devices and hard to discover. */
 .issue-details {
-  display: none;
-}
-
-.issue-item:hover .issue-details {
-  display: block; /* Shown when container is hovered */
+  display: block;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
+  opacity: 0.85;
 }
 
 .no-issues-found-list-item {
@@ -909,7 +931,9 @@ textarea:focus {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--bg-secondary);
+  /* Semi-transparent so the blur actually reads as an overlay over the app,
+     instead of a flat opaque screen. */
+  background: rgba(3, 7, 11, 0.72);
   backdrop-filter: blur(8px);
   display: grid;
   place-items: center;
@@ -1475,5 +1499,51 @@ textarea:focus {
   /* Improve touch targets for checkboxes */
   .toggle-item {
     min-height: 2.75rem;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY — keyboard focus visibility
+   Keyboard/AT users need a clear focus ring on every interactive
+   control. :focus-visible keeps it from showing on mouse clicks.
+   ============================================================ */
+
+.btn:focus-visible,
+.btn-link:focus-visible,
+.close-btn:focus-visible,
+.btn-reset-guidelines:focus-visible,
+.import-container:focus-within,
+.issue-item:focus-visible,
+.toggle-item input[type="checkbox"]:focus-visible,
+.input-group input:focus-visible {
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
+  border-radius: 0.4rem;
+}
+
+/* Keep the issue list keyboard-operable: make items focusable targets read
+   as interactive. */
+.issue-item:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================
+   MOTION — respect users who prefer reduced motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .card:hover,
+  .btn:hover,
+  .issue-item:hover {
+    transform: none !important;
   }
 }

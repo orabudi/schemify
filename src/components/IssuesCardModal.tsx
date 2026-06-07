@@ -73,6 +73,15 @@ export default function IssuesCardModal({
                   key={`${issue.title}-${index}`}
                   className={`issue-item ${severityClass[issue.severity]}`}
                   onClick={() => handleIssueClick(issue)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleIssueClick(issue);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${issue.severity} severity: ${issue.title}. Jump to line ${issue.lineNumber ?? ""}`}
                   style={{ cursor: "pointer" }}
                 >
                   {issue.lineNumber && (
